@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 
+using LineScanCam;
 using HalconDotNet;
 using ThridLibray;
 
@@ -17,6 +18,7 @@ namespace LineScanCamDemo
 {
     public partial class Form1 : Form
     {
+        private LineScanCamera m_LineCam;
         private Thread m_ThreadLive;        // 显示线程
         private bool m_IsLive;              // 线程控制变量
         private bool m_IsExitLive;
@@ -31,7 +33,7 @@ namespace LineScanCamDemo
         public Form1()
         {
             InitializeComponent();
-
+            m_LineCam = new LineScanCamera();
             m_ThreadLive = null;
             m_IsLive = false;
             m_IsExitLive = false;
@@ -203,384 +205,9 @@ namespace LineScanCamDemo
             m_mutex.ReleaseMutex();
         }
 
-        #region 设置相机属性参数（根据不同类型）
-
-        #region (1-5)设置图像类型的相机参数(ImagePixelFormat、TriggerMode、TriggerSelector、AcquisitionMode、TriggerSource)
-        //1.设置图像像素格式
-        private bool SetImagePixelFormat(string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.ImagePixelFormat])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Image Pixel Format Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取图像像素格式
-        private bool GetImagePixelFormat(out string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.ImagePixelFormat])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Get Image Pixel Format Exp:" + e.Message);
-                    value = "";
-                    return false;
-                }
-                return true;
-            }
-            value = "";
-            return false;
-        }
-
-        //2.设置触发模式
-        private bool SetTriggerMode(string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.TriggerMode])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Trigger Mode Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取触发模式
-        private bool GetTriggerMode(out string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.TriggerMode])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Get Trigger Mode Exp:" + e.Message);
-                    value = "";
-                    return false;
-                }
-                return true;
-            }
-            value = "";
-            return false;
-        }
-
-        //3.设置触发选择(控制所选的触发器是否处于触发状态)
-        private bool SetTriggerSelector(string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.TriggerSelector])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Trigger Selector Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取触发选择
-        private bool GetTriggerSelector(out string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.TriggerSelector])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-
-                {
-                    MessageBox.Show("Get Trigger Selector Exp:" + e.Message);
-                    value = "";
-                    return false;
-                }
-                return true;
-            }
-            value = "";
-            return false;
-        }
-
-        //4.设置采集模式
-        private bool SetAcquisitionMode(string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.AcquisitionMode])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Acquisition Mode Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取采集模式
-        private bool GetAcquisitionMode(out string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.AcquisitionMode])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-
-                {
-                    MessageBox.Show("Get Acquisition Mode Exp:" + e.Message);
-                    value = "";
-                    return false;
-                }
-                return true;
-            }
-            value = "";
-            return false;
-        }
-
-        //5.设置触发源
-        private bool SetTriggerSource(string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.TriggerSource])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Trigger Source Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取触发源
-        private bool GetTriggerSource(out string value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IEnumParameter p = m_dev.ParameterCollection[ParametrizeNameSet.TriggerSource])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-
-                {
-                    MessageBox.Show("Get Trigger Source Exp:" + e.Message);
-                    value = "";
-                    return false;
-                }
-                return true;
-            }
-            value = "";
-            return false;
-        }
-        #endregion
-
-        #region (6-7)设置整型相机参数(Width、Height)
-        private bool SetIntegerParam(string IntegerParam, int value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IIntegraParameter p = m_dev.ParameterCollection[new IntegerName(IntegerParam)])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Integer Param Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取整型相机参数
-        private bool GetIntegerParam(string IntegerParam, out int value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IIntegraParameter p = m_dev.ParameterCollection[new IntegerName(IntegerParam)])
-                    {
-                        value = (int)p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Get Integer Param Exp:" + e.Message);
-                    value = 0;
-                    return false;
-                }
-                return true;
-            }
-            value = 0;
-            return false;
-        }
-
-
-        #endregion
-
-        #region (8--11)设置浮点型相机参数(ExposureTime、GainRaw、Gamma、AcquisitionLineRate)
-        private bool SetFloatParameter(string FloatParameter, double value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IFloatParameter p = m_dev.ParameterCollection[new FloatName(FloatParameter)])
-                    {
-                        p.SetValue(value);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Float Param Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取浮点型相机参数
-        private bool GetFloatParameter(string FloatParameter, out double value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IFloatParameter p = m_dev.ParameterCollection[new FloatName(FloatParameter)])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Get Float Param Exp:" + e.Message);
-                    value = 0;
-                    return false;
-                }
-                return true;
-            }
-            value = 0;
-            return false;
-        }
-        #endregion
-
-        #region 12.设置布尔型相机参数
-        //设置相机同步或异步采集
-        private bool SetAcquisitionLineRateEnable(bool value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IBooleanParameter p = m_dev.ParameterCollection[new BooleanName("AcquisitionLineRateEnable")])
-                    {
-                        p.SetValue(value);//false是同步采集，true是异步采集
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Acquisition Line Rate Enable Exp:" + e.Message);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        //获取相机同步或异步采集
-        private bool GetAcquisitionLineRateEnable(out bool value)
-        {
-            if (m_dev != null)
-            {
-                try
-                {
-                    using (IBooleanParameter p = m_dev.ParameterCollection[new BooleanName("AcquisitionLineRateEnable")])
-                    {
-                        value = p.GetValue();
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    MessageBox.Show("Set Acquisition Line Rate Enable Exp:" + e.Message);
-                    value = false;
-                    return false;
-                }
-                return true;
-            }
-            value = false;
-            return false;
-        }
-        #endregion
-
-        #endregion
-
         private void WriteCamParam()
         {
-            if (m_dev != null)
+            if (m_LineCam != null)
             {
                 try
                 {
@@ -609,14 +236,14 @@ namespace LineScanCamDemo
                     gamma = double.Parse(textBoxGamma.Text);
 
                     if (
-                        SetImagePixelFormat(pixelFormat) &&
-                        SetIntegerParam("Width", imageWidth) &&
-                        SetIntegerParam("Height", imageHeight) &&
-                        SetAcquisitionLineRateEnable(lineRateEnable) &&
-                        SetFloatParameter("AcquisitionLineRate", lineRate) &&
-                        SetFloatParameter("ExposureTime", exposureTime) &&
-                        SetFloatParameter("GainRaw", gainRaw) &&
-                        SetFloatParameter("Gamma", gamma)
+                        m_LineCam.SetImagePixelFormat(pixelFormat) &&
+                        m_LineCam.SetIntegerParam("Width", imageWidth) &&
+                        m_LineCam.SetIntegerParam("Height", imageHeight) &&
+                        m_LineCam.SetAcquisitionLineRateEnable(lineRateEnable) &&
+                        m_LineCam.SetFloatParameter("AcquisitionLineRate", lineRate) &&
+                        m_LineCam.SetFloatParameter("ExposureTime", exposureTime) &&
+                        m_LineCam.SetFloatParameter("GainRaw", gainRaw) &&
+                        m_LineCam.SetFloatParameter("Gamma", gamma)
                         )
                     {
                         comboBoxPixelFormat.SelectedIndex = comboBoxPixelFormat.FindString(pixelFormat);
@@ -676,14 +303,14 @@ namespace LineScanCamDemo
                 double gamma;
 
                 if (
-                    GetImagePixelFormat(out pixelFormat) &&
-                    GetIntegerParam("Width", out imageWidth) &&
-                    GetIntegerParam("Height", out imageHeight) &&
-                    GetAcquisitionLineRateEnable(out lineRateEnable) &&
-                    GetFloatParameter("AcquisitionLineRate", out lineRate) &&
-                    GetFloatParameter("ExposureTime", out exposureTime) &&
-                    GetFloatParameter("GainRaw", out gainRaw) &&
-                    GetFloatParameter("Gamma", out gamma)
+                    m_LineCam.GetImagePixelFormat(out pixelFormat) &&
+                    m_LineCam.GetIntegerParam("Width", out imageWidth) &&
+                    m_LineCam.GetIntegerParam("Height", out imageHeight) &&
+                    m_LineCam.GetAcquisitionLineRateEnable(out lineRateEnable) &&
+                    m_LineCam.GetFloatParameter("AcquisitionLineRate", out lineRate) &&
+                    m_LineCam.GetFloatParameter("ExposureTime", out exposureTime) &&
+                    m_LineCam.GetFloatParameter("GainRaw", out gainRaw) &&
+                    m_LineCam.GetFloatParameter("Gamma", out gamma)
                     )
                 {
                     comboBoxPixelFormat.SelectedIndex = comboBoxPixelFormat.FindString(pixelFormat);
@@ -1024,10 +651,9 @@ namespace LineScanCamDemo
 
         private void Thread_Live()
         {
-            bool isAsync = checkBoxAsync.Checked;
             bool isGetting = false;
 
-            if (m_dev == null)
+            if (m_LineCam == null)
             {
                 m_IsLive = false;
 
@@ -1052,31 +678,30 @@ namespace LineScanCamDemo
 
                     bool ok = false;
                     byte[] getImagePtr;
+                    //int ImageW, ImageH;
                     HTuple getImageW, getImageH;
-                    HObject getImageObj;
+                    //IntPtr pData;
 
                     if (m_frameList.Count == 0)
                     {
                         Thread.Sleep(10);
                         continue;
                     }
-
+                    
                     // 图像队列取最新帧 
-                    // always get the latest frame in list 
                     m_mutex.WaitOne();
                     IGrabbedRawData frame = m_frameList.ElementAt(m_frameList.Count - 1);
                     m_frameList.Clear();
                     m_mutex.ReleaseMutex();
 
                     // 主动调用回收垃圾 
-                    // call garbage collection 
                     GC.Collect();
 
                     int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, false);
                     IntPtr pData = Marshal.AllocHGlobal(nRGB);
                     Marshal.Copy(frame.Image, 0, pData, frame.ImageSize);
+                    
 
-                    //ok = m_LineCam.GrabImageAsync(out getImageObj);
                     /*
                     IntPtr ImagePtr = IntPtr.Zero;
                     ImagePtr = ArrayToIntptr(getImagePtr);
@@ -1085,6 +710,14 @@ namespace LineScanCamDemo
                         break;
                     }
                     */
+                    /*
+                    if(!m_LineCam.GrabImage(out pData,out ImageW,out ImageH))
+                    {
+                        MessageBox.Show("采流取图失败！");
+                        return;
+                    }
+                    */
+
                     HObject showImageObj;
                     HOperatorSet.GenImage1Extern(out showImageObj, "byte", frame.Width, frame.Height, (HTuple)pData, 0);
                     //FreeIntptr(ImagePtr);
@@ -1118,7 +751,7 @@ namespace LineScanCamDemo
 
         private bool StartLive()
         {
-            if (m_dev != null)
+            if (m_LineCam != null)
             {
                 m_IsLive = false;
 
@@ -1128,29 +761,36 @@ namespace LineScanCamDemo
                 strAcqMode = "Continuous";
                 lineRateEnable = checkBoxAsync.Checked;
 
-                if(!GetAcquisitionLineRateEnable(out GetlineRateEnable))
+                if(!m_LineCam.GetAcquisitionLineRateEnable(out GetlineRateEnable))
                 {
                     return false;
                 }
                 else if(GetlineRateEnable != lineRateEnable)
                 {
-                    if(!SetAcquisitionLineRateEnable(lineRateEnable))
+                    if(!m_LineCam.SetAcquisitionLineRateEnable(lineRateEnable))
                     {
                         return false;
                     }
                 }
 
-                if (!GetAcquisitionMode(out strAcqModeGet))
+                if (!m_LineCam.GetAcquisitionMode(out strAcqModeGet))
                 {
                     return false;
                 }
                 else if (strAcqModeGet != strAcqMode)
                 {
-                    if (!SetAcquisitionMode(strAcqMode))//连续采集
+                    if (!m_LineCam.SetAcquisitionMode(strAcqMode))//连续采集
                     {
                         return false;
                     }
                 }
+
+                /*
+                if (!m_LineCam.StreamGrab())
+                {
+                    return false;
+                }
+                */
 
                 m_dev.StreamGrabber.SetBufferCount(8);
                 // 注册码流回调事件 
@@ -1165,7 +805,6 @@ namespace LineScanCamDemo
                     return false;
                 }
 
-
                 //启动取流线程
                 m_IsLive = true;
                 m_ThreadLive = new Thread(Thread_Live);
@@ -1178,10 +817,9 @@ namespace LineScanCamDemo
             return false;
         }
 
-
         private bool StartSoftTriggerLive()
         {
-            if (m_dev != null)
+            if (m_LineCam != null)
             {
                 m_IsLive = true;
                 string strAcqMode, strAcqModeGet;
@@ -1192,31 +830,36 @@ namespace LineScanCamDemo
 
                 //SetTriggerMode("On");
 
-                if (!GetAcquisitionLineRateEnable(out GetlineRateEnable))
+                if (!m_LineCam.GetAcquisitionLineRateEnable(out GetlineRateEnable))
                 {
                     return false;
                 }
                 else if (GetlineRateEnable != lineRateEnable)
                 {
-                    if (!SetAcquisitionLineRateEnable(lineRateEnable))
+                    if (!m_LineCam.SetAcquisitionLineRateEnable(lineRateEnable))
                     {
                         return false;
                     }
                 }
 
-                if (!GetAcquisitionMode(out strAcqModeGet))
+                if (!m_LineCam.GetAcquisitionMode(out strAcqModeGet))
                 {
                     return false;
                 }
                 else if (strAcqModeGet != strAcqMode)
                 {
-                    if (!SetAcquisitionMode(strAcqMode))//连续采集
+                    if (!m_LineCam.SetAcquisitionMode(strAcqMode))//连续采集
                     {
                         return false;
                     }
                 }
+                /*
+                if (!m_LineCam.StreamGrab())
+                {
+                    return false;
+                }
+                */
                 m_dev.StreamGrabber.SetBufferCount(8);
-
                 // 注册码流回调事件 
                 // register grab event callback 
                 m_dev.StreamGrabber.ImageGrabbed += OnImageGrabbed;
@@ -1238,7 +881,7 @@ namespace LineScanCamDemo
         {
             try
             {
-                if (m_dev != null && m_IsLive)
+                if (m_LineCam != null && m_IsLive)
                 {
                     m_IsLive = false;
                     if (this.Visible)
@@ -1253,8 +896,13 @@ namespace LineScanCamDemo
                         buttonSoftTriggerGrab.Enabled = false;
                         buttonTriggerMode.Enabled = true;
                     }
-                    m_dev.StreamGrabber.ImageGrabbed -= OnImageGrabbed;         // 反注册回调 | unregister grab event callback 
-                    m_dev.ShutdownGrab();                                       // 停止码流 | stop grabbing 
+
+                    //if (!m_LineCam.StopStreamGrab())
+                    //{
+                    //    return;
+                    //}
+                    m_dev.StreamGrabber.ImageGrabbed -= OnImageGrabbed;         // 反注册回调
+                    m_dev.ShutdownGrab();                                       // 停止码流
                     return;
                 }
                 else
@@ -1340,41 +988,47 @@ namespace LineScanCamDemo
 
         private void buttonOpenCam_Click(object sender, EventArgs e)
         {
-            try
-            {
-                //搜索设备
-                List<IDeviceInfo> li = Enumerator.EnumerateDevices();
-                if (li.Count > 0)
+            if (m_LineCam != null)
+            {                
+                m_dev = m_LineCam.OpenCam();
+                if(m_dev == null)
                 {
-                    // 获取搜索到的第一个设备 
-                    m_dev = Enumerator.GetDeviceByIndex(0);
-
-                    // 注册连接事件 
-                    m_dev.CameraOpened += OnCameraOpen;
-                    m_dev.ConnectionLost += OnConnectLoss;
-                    m_dev.CameraClosed += OnCameraClose;
-
-                    if (!m_dev.Open())
-                    {
-                        MessageBox.Show("连接相机失败！");
-                        return;
-                    }
-
-                    //设置相机通用参数
-                    ReadCamParam();
-
-                    // 设置缓存个数为8（默认值为16） 
-                    m_dev.StreamGrabber.SetBufferCount(8);
-                }
-                else
-                {
-                    MessageBox.Show("请连接相机！");
+                    buttonOpenCam.Enabled = true;
                     return;
                 }
-            }
-            catch (Exception exception)
-            {
-                Catcher.Show(exception);
+                // 注册连接事件 
+                m_dev.CameraOpened += OnCameraOpen;
+                m_dev.ConnectionLost += OnConnectLoss;
+                m_dev.CameraClosed += OnCameraClose;
+
+                buttonOpenCam.Enabled = false;
+                buttonCloseCam.Enabled = true;
+                checkBoxAsync.Enabled = true;
+                buttonStartLive.Enabled = true;
+                buttonStopLive.Enabled = false;
+                buttonSoftTriggerGrab.Enabled = false;
+                buttonAdaptShow.Enabled = true;
+                buttonPercent100Show.Enabled = true;
+                buttonTriggerMode.Enabled = true;
+
+                buttonSetParam.Enabled = true;
+                buttonGetParam.Enabled = true;
+                comboBoxPixelFormat.Enabled = true;
+                trackBarImageWidth.Enabled = true;
+                textBoxImageWidth.Enabled = true;
+                trackBarImageHeight.Enabled = true;
+                textBoxImageHeight.Enabled = true;
+                checkBoxEnableLineRate.Enabled = true;
+                trackBarLineRate.Enabled = true;
+                textBoxLineRate.Enabled = true;
+                trackBarExposureTime.Enabled = true;
+                textBoxExposureTime.Enabled = true;
+                trackBarGain.Enabled = true;
+                textBoxGain.Enabled = true;
+                trackBarGamma.Enabled = true;
+                textBoxGamma.Enabled = true;
+                //设置相机通用参数
+                ReadCamParam();
             }
 
             return;
@@ -1382,20 +1036,14 @@ namespace LineScanCamDemo
 
         private void buttonCloseCam_Click(object sender, EventArgs e)
         {
-            try
+            if (m_LineCam != null)
             {
-                if (m_dev == null)
+                bool ok = false;
+                ok = m_LineCam.CloseCam();
+                if (!ok)
                 {
-                    throw new InvalidOperationException("设备不存在！");
+                    return;
                 }
-
-                m_dev.StreamGrabber.ImageGrabbed -= OnImageGrabbed;         // 反注册回调 | unregister grab event callback 
-                m_dev.ShutdownGrab();                                       // 停止码流 | stop grabbing 
-                m_dev.Close();                                              // 关闭相机 | close camera 
-            }
-            catch (Exception exception)
-            {
-                Catcher.Show(exception);
             }
             return;
         }
@@ -1404,32 +1052,32 @@ namespace LineScanCamDemo
         {
             if (m_dev != null)
             {
-                    if (m_TriMode == true)
+                if (m_TriMode == true)
+                {
+                    if (StartSoftTriggerLive())
                     {
-                        if (StartSoftTriggerLive())
-                        {
-                            buttonSoftTriggerGrab.Enabled = true;
-                            checkBoxAsync.Enabled = false;
-                            buttonStartLive.Enabled = false;
-                            buttonStopLive.Enabled = true;
-                            buttonSetParam.Enabled = false;
-                            buttonGetParam.Enabled = false;
-                            buttonTriggerMode.Enabled = false;
-                        }
+                        buttonSoftTriggerGrab.Enabled = true;
+                        checkBoxAsync.Enabled = false;
+                        buttonStartLive.Enabled = false;
+                        buttonStopLive.Enabled = true;
+                        buttonSetParam.Enabled = false;
+                        buttonGetParam.Enabled = false;
+                        buttonTriggerMode.Enabled = false;
                     }
-                    else
+                }
+                else
+                {
+                    if (StartLive())
                     {
-                        if (StartLive())
-                        {
-                            buttonSoftTriggerGrab.Enabled = false;
-                            checkBoxAsync.Enabled = false;
-                            buttonStartLive.Enabled = false;
-                            buttonStopLive.Enabled = true;
-                            buttonSetParam.Enabled = false;
-                            buttonGetParam.Enabled = false;
-                            buttonTriggerMode.Enabled = false;
-                        }
+                        buttonSoftTriggerGrab.Enabled = false;
+                        checkBoxAsync.Enabled = false;
+                        buttonStartLive.Enabled = false;
+                        buttonStopLive.Enabled = true;
+                        buttonSetParam.Enabled = false;
+                        buttonGetParam.Enabled = false;
+                        buttonTriggerMode.Enabled = false;
                     }
+                }
             }
 
             return;
@@ -1437,7 +1085,7 @@ namespace LineScanCamDemo
 
         private void buttonStopLive_Click(object sender, EventArgs e)
         {
-            if (m_dev != null)
+            if (m_LineCam != null)
             {
                 StopLive();
             }
@@ -1558,7 +1206,6 @@ namespace LineScanCamDemo
         {
             if (m_dev != null)
             {
-                //StopLive();
                 m_dev.Dispose();
                 m_dev = null;
             }
@@ -1568,7 +1215,6 @@ namespace LineScanCamDemo
         private void buttonSetParam_Click(object sender, EventArgs e)
         {
             WriteCamParam();
-
             return;
         }
 
