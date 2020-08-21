@@ -54,11 +54,23 @@ namespace LineScanCamDemo
 
             buttonSetParam.Enabled = false;
             buttonGetParam.Enabled = false;
+
             comboBoxPixelFormat.Enabled = false;
             comboBoxPixelFormat.Items.Add("Mono8");
             comboBoxPixelFormat.Items.Add("Mono10");
             comboBoxPixelFormat.Items.Add("Mono10Packed");
             comboBoxPixelFormat.SelectedIndex = -1;
+
+            comboBoxTriggerSource.Enabled = false;
+            comboBoxTriggerSource.Items.Add("Software");
+            comboBoxTriggerSource.Items.Add("Line1");
+            comboBoxTriggerSource.Items.Add("Line2");
+            comboBoxTriggerSource.Items.Add("Line3");
+            comboBoxTriggerSource.Items.Add("Line4");
+            comboBoxTriggerSource.Items.Add("Line5");
+            comboBoxTriggerSource.Items.Add("Line6");
+            comboBoxTriggerSource.SelectedIndex = -1;
+
             trackBarImageWidth.Enabled = false;
             trackBarImageWidth.SetRange(32, 2048);
             textBoxImageWidth.Enabled = false;
@@ -108,6 +120,7 @@ namespace LineScanCamDemo
                 buttonSetParam.Enabled = true;
                 buttonGetParam.Enabled = true;
                 comboBoxPixelFormat.Enabled = true;
+                comboBoxTriggerSource.Enabled = true;
                 trackBarImageWidth.Enabled = true;
                 textBoxImageWidth.Enabled = true;
                 trackBarImageHeight.Enabled = true;
@@ -142,6 +155,7 @@ namespace LineScanCamDemo
                 buttonSetParam.Enabled = false;
                 buttonGetParam.Enabled = false;
                 comboBoxPixelFormat.Enabled = false;
+                comboBoxTriggerSource.Enabled = false;
                 trackBarImageWidth.Enabled = false;
                 textBoxImageWidth.Enabled = false;
                 trackBarImageHeight.Enabled = false;
@@ -180,6 +194,7 @@ namespace LineScanCamDemo
                 buttonSetParam.Enabled = false;
                 buttonGetParam.Enabled = false;
                 comboBoxPixelFormat.Enabled = false;
+                comboBoxTriggerSource.Enabled = false;
                 trackBarImageWidth.Enabled = false;
                 textBoxImageWidth.Enabled = false;
                 trackBarImageHeight.Enabled = false;
@@ -214,6 +229,9 @@ namespace LineScanCamDemo
                     string pixelFormat;
                     pixelFormat = comboBoxPixelFormat.SelectedItem.ToString();
 
+                    string triggerSource;
+                    triggerSource = comboBoxTriggerSource.SelectedItem.ToString();
+
                     int imageWidth;
                     imageWidth = int.Parse(textBoxImageWidth.Text);
 
@@ -243,10 +261,12 @@ namespace LineScanCamDemo
                         m_LineCam.SetFloatParameter("AcquisitionLineRate", lineRate) &&
                         m_LineCam.SetFloatParameter("ExposureTime", exposureTime) &&
                         m_LineCam.SetFloatParameter("GainRaw", gainRaw) &&
-                        m_LineCam.SetFloatParameter("Gamma", gamma)
+                        m_LineCam.SetFloatParameter("Gamma", gamma) &&
+                        m_LineCam.SetTriggerSource(triggerSource)
                         )
                     {
                         comboBoxPixelFormat.SelectedIndex = comboBoxPixelFormat.FindString(pixelFormat);
+                        comboBoxTriggerSource.SelectedIndex = comboBoxTriggerSource.FindString(triggerSource);
 
                         trackBarImageWidth.Value = imageWidth;
                         textBoxImageWidth.Text = imageWidth.ToString();
@@ -294,6 +314,7 @@ namespace LineScanCamDemo
             if (m_dev != null)
             {
                 string pixelFormat;
+                string triggerSource;
                 int imageWidth;
                 int imageHeight;
                 bool lineRateEnable;
@@ -310,10 +331,12 @@ namespace LineScanCamDemo
                     m_LineCam.GetFloatParameter("AcquisitionLineRate", out lineRate) &&
                     m_LineCam.GetFloatParameter("ExposureTime", out exposureTime) &&
                     m_LineCam.GetFloatParameter("GainRaw", out gainRaw) &&
-                    m_LineCam.GetFloatParameter("Gamma", out gamma)
+                    m_LineCam.GetFloatParameter("Gamma", out gamma) &&
+                    m_LineCam.GetTriggerSource(out triggerSource)
                     )
                 {
                     comboBoxPixelFormat.SelectedIndex = comboBoxPixelFormat.FindString(pixelFormat);
+                    comboBoxTriggerSource.SelectedIndex = comboBoxTriggerSource.FindString(triggerSource);
 
                     trackBarImageWidth.Value = imageWidth;
                     textBoxImageWidth.Text = imageWidth.ToString();
@@ -681,6 +704,7 @@ namespace LineScanCamDemo
                     //int ImageW, ImageH;
                     HTuple getImageW, getImageH;
                     //IntPtr pData;
+                    string strPixelFormatGet;
 
                     if (m_frameList.Count == 0)
                     {
@@ -696,40 +720,32 @@ namespace LineScanCamDemo
 
                     // 主动调用回收垃圾 
                     GC.Collect();
-
-                    int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, false);
-                    IntPtr pData = Marshal.AllocHGlobal(nRGB);
-                    Marshal.Copy(frame.Image, 0, pData, frame.ImageSize);
-                    
-
-                    /*
-                    IntPtr ImagePtr = IntPtr.Zero;
-                    ImagePtr = ArrayToIntptr(getImagePtr);
-                    if (ImagePtr == IntPtr.Zero)
+                    HObject showImageObj;
+                    if (!m_LineCam.GetImagePixelFormat(out strPixelFormatGet))
                     {
-                        break;
-                    }
-                    */
-                    /*
-                    if(!m_LineCam.GrabImage(out pData,out ImageW,out ImageH))
-                    {
-                        MessageBox.Show("采流取图失败！");
+                        MessageBox.Show("获取图像格式失败！");
                         return;
                     }
-                    */
-
-                    HObject showImageObj;
-                    HOperatorSet.GenImage1Extern(out showImageObj, "byte", frame.Width, frame.Height, (HTuple)pData, 0);
-                    //FreeIntptr(ImagePtr);
-
+                    if (strPixelFormatGet == "Mono8")
+                    {
+                        int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, false);
+                        IntPtr pData = Marshal.AllocHGlobal(nRGB);
+                        HOperatorSet.GenImage1Extern(out showImageObj, "byte", frame.Width, frame.Height, (HTuple)pData, 0);
+                        Marshal.Copy(frame.Image, 0, pData, frame.ImageSize);
+                    }
+                    else
+                    {
+                        int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, true);
+                        IntPtr pData = Marshal.AllocHGlobal(nRGB);
+                        RGBFactory.ToRGB(frame.Image, frame.Width, frame.Height, true, frame.PixelFmt, pData, nRGB);
+                        HOperatorSet.GenImageInterleaved(out showImageObj, (HTuple)pData, "bgr", frame.Width, frame.Height, 0, "byte",
+                                                                frame.Width, frame.Height, 0, 0, 8, 0);
+                    }
                     HOperatorSet.CopyImage(showImageObj, out m_ImageObj);
-
                     HOperatorSet.GetImageSize(m_ImageObj,out getImageW,out getImageH);
                     HOperatorSet.SetPart(hWindowControlImage.HalconWindow, 0, 0, getImageH, getImageW);
                     HOperatorSet.DispImage(m_ImageObj, hWindowControlImage.HalconWindow);
-
                     //PaintImageWindow(m_ImageObj);
-
                     GC.Collect();
                 }
 
@@ -817,7 +833,7 @@ namespace LineScanCamDemo
             return false;
         }
 
-        private bool StartSoftTriggerLive()
+        private bool StartTriggerLive()
         {
             if (m_LineCam != null)
             {
@@ -928,6 +944,7 @@ namespace LineScanCamDemo
 
                     byte[] getImagePtr;
                     int getImageW, getImageH;
+                    string strPixelFormatGet;
                     HObject getImageObj;
 
                     // 图像队列取最新帧 
@@ -940,15 +957,29 @@ namespace LineScanCamDemo
                     // 主动调用回收垃圾 
                     // call garbage collection 
                     GC.Collect();
+                    HObject showImageObj;
+                    if (!m_LineCam.GetImagePixelFormat(out strPixelFormatGet))
+                    {
+                        MessageBox.Show("获取图像格式失败！");
+                        return false;
+                    }
+                    if (strPixelFormatGet == "Mono8")
+                    {
+                        int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, false);
+                        IntPtr pData = Marshal.AllocHGlobal(nRGB);
+                        HOperatorSet.GenImage1Extern(out showImageObj, "byte", frame.Width, frame.Height, (HTuple)pData, 0);
+                        Marshal.Copy(frame.Image, 0, pData, frame.ImageSize);
+                    }
+                    else
+                    {
+                        int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, true);
+                        IntPtr pData = Marshal.AllocHGlobal(nRGB);
+                        RGBFactory.ToRGB(frame.Image, frame.Width, frame.Height, true, frame.PixelFmt, pData, nRGB);
+                        HOperatorSet.GenImageInterleaved(out showImageObj, (HTuple)pData, "bgr", frame.Width, frame.Height, 0, "byte",
+                                                                frame.Width, frame.Height, 0, 0, 8, 0);
+                    }
+                    HOperatorSet.CopyImage(showImageObj, out m_ImageObj);
 
-                    int nRGB = RGBFactory.EncodeLen(frame.Width, frame.Height, false);
-                    IntPtr pData = Marshal.AllocHGlobal(nRGB);
-                    Marshal.Copy(frame.Image, 0, pData, frame.ImageSize);
-
-                    HOperatorSet.GenImage1Extern(out getImageObj, "byte", frame.Width, frame.Height, (HTuple)pData, 0);
-                    HOperatorSet.CopyImage(getImageObj, out m_ImageObj);
-
-                    FreeIntptr(pData);
                     //添加图像适应窗口
                     HOperatorSet.SetPart(hWindowControlImage.HalconWindow, 0, 0, frame.Height, frame.Width);
                     HOperatorSet.DispImage(m_ImageObj, hWindowControlImage.HalconWindow);
@@ -1014,6 +1045,7 @@ namespace LineScanCamDemo
                 buttonSetParam.Enabled = true;
                 buttonGetParam.Enabled = true;
                 comboBoxPixelFormat.Enabled = true;
+                comboBoxTriggerSource.Enabled = true;
                 trackBarImageWidth.Enabled = true;
                 textBoxImageWidth.Enabled = true;
                 trackBarImageHeight.Enabled = true;
@@ -1054,15 +1086,37 @@ namespace LineScanCamDemo
             {
                 if (m_TriMode == true)
                 {
-                    if (StartSoftTriggerLive())
+                    string triggerSourceGet;
+
+                    if (!m_LineCam.GetTriggerSource(out triggerSourceGet))
                     {
-                        buttonSoftTriggerGrab.Enabled = true;
-                        checkBoxAsync.Enabled = false;
-                        buttonStartLive.Enabled = false;
-                        buttonStopLive.Enabled = true;
-                        buttonSetParam.Enabled = false;
-                        buttonGetParam.Enabled = false;
-                        buttonTriggerMode.Enabled = false;
+                        return;
+                    }
+                    if (triggerSourceGet == "Software")
+                    {
+                        if (StartTriggerLive())
+                        {
+                            buttonSoftTriggerGrab.Enabled = true;
+                            checkBoxAsync.Enabled = false;
+                            buttonStartLive.Enabled = false;
+                            buttonStopLive.Enabled = true;
+                            buttonSetParam.Enabled = false;
+                            buttonGetParam.Enabled = false;
+                            buttonTriggerMode.Enabled = false;
+                        }
+                    }
+                    else
+                    {
+                        if (StartTriggerLive())
+                        {
+                            buttonSoftTriggerGrab.Enabled = false;
+                            checkBoxAsync.Enabled = false;
+                            buttonStartLive.Enabled = false;
+                            buttonStopLive.Enabled = true;
+                            buttonSetParam.Enabled = false;
+                            buttonGetParam.Enabled = false;
+                            buttonTriggerMode.Enabled = false;
+                        }
                     }
                 }
                 else

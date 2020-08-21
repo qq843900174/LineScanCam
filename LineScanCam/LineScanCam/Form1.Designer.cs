@@ -63,6 +63,8 @@
             this.buttonPercent100Show = new System.Windows.Forms.Button();
             this.hWindowControlImage = new HalconDotNet.HWindowControl();
             this.buttonTriggerMode = new System.Windows.Forms.Button();
+            this.comboBoxTriggerSource = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarGamma)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarGain)).BeginInit();
@@ -143,6 +145,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.comboBoxTriggerSource);
+            this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.textBoxGamma);
             this.groupBox1.Controls.Add(this.textBoxGain);
             this.groupBox1.Controls.Add(this.textBoxExposureTime);
@@ -408,6 +412,24 @@
             this.buttonTriggerMode.UseVisualStyleBackColor = true;
             this.buttonTriggerMode.Click += new System.EventHandler(this.buttonTriggerMode_Click);
             // 
+            // comboBoxTriggerSource
+            // 
+            this.comboBoxTriggerSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTriggerSource.FormattingEnabled = true;
+            this.comboBoxTriggerSource.Location = new System.Drawing.Point(404, 182);
+            this.comboBoxTriggerSource.Name = "comboBoxTriggerSource";
+            this.comboBoxTriggerSource.Size = new System.Drawing.Size(200, 23);
+            this.comboBoxTriggerSource.TabIndex = 10;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(333, 185);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(60, 15);
+            this.label9.TabIndex = 9;
+            this.label9.Text = "触发源:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -478,6 +500,8 @@
         private System.Windows.Forms.Button buttonPercent100Show;
         private HalconDotNet.HWindowControl hWindowControlImage;
         private System.Windows.Forms.Button buttonTriggerMode;
+        private System.Windows.Forms.ComboBox comboBoxTriggerSource;
+        private System.Windows.Forms.Label label9;
     }
 }
 
